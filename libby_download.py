@@ -555,23 +555,63 @@ def run():
             MAX_NO_NEW_PARTS_ITERATIONS = 10 # Stop if no new parts found for this many clicks
             MAX_FORWARD_CLICKS = 500 # Safety limit for forward clicks
 
-            # Selector for the "Next Chapter" button
-            NEXT_CHAPTER_SELECTOR = 'button.chapter-bar-next-button'
+            # Selector for forward navigation - use "skip ahead 15 seconds" button
+            FORWARD_SELECTORS = [
+                'button.mini-player-jump-ahead',  # The skip ahead 15s button
+                'button[aria-label="Advance 15 seconds"]',  # Exact aria-label match
+                'button[aria-label*="Advance"]',  # Partial aria-label match
+                'button[aria-label*="15 seconds"]',  # Partial aria-label match
+                'button:has-text("15")',  # Button containing "15"
+                'button.chapter-bar-next-button',  # Fallback to original
+                'button[aria-label*="next"]',
+                'button[aria-label*="Next"]'
+            ]
 
             for i in range(MAX_FORWARD_CLICKS):
                 current_parts_count = len(downloaded_parts)
                 print(f"Forward pass iteration {i+1}. Current parts downloaded: {current_parts_count}")
 
-                try:
-                    page.wait_for_selector(NEXT_CHAPTER_SELECTOR, timeout=5000)
-                    page.click(NEXT_CHAPTER_SELECTOR)
-                    time.sleep(5) # Reduced sleep time here
-                except PlaywrightTimeoutError:
-                    print("No 'Next Chapter' button found or end of audiobook reached in forward pass.")
+                # Try multiple selectors to find the forward button (15s skip ahead)
+                button_found = False
+                for selector in FORWARD_SELECTORS:
+                    try:
+                        page.wait_for_selector(selector, timeout=2000)
+                        print(f"Found forward button with selector: {selector}")
+                        page.click(selector)
+                        button_found = True
+
+                        if button_found:
+                            time.sleep(5) # Reduced sleep time here
+                            break
+                    except PlaywrightTimeoutError:
+                        continue # Try next selector
+                    except Exception as e:
+                        print(f"Error with selector {selector}: {e}")
+                        continue # Try next selector
+
+                if not button_found:
+                    print("No forward button found with any selector. Debugging...")
+                    # Take screenshot for debugging
+                    debug_screenshot = os.path.join(config['DOWNLOAD_DIRECTORY'], f"debug_no_next_button_{i+1}.png")
+                    page.screenshot(path=debug_screenshot)
+                    print(f"Debug screenshot saved: {debug_screenshot}")
+
+                    # Print all buttons on page for debugging
+                    try:
+                        all_buttons = page.locator('button').all()
+                        print(f"Found {len(all_buttons)} buttons on page:")
+                        for idx, button in enumerate(all_buttons):  
+                            try:
+                                text = button.text_content()[:50] if button.text_content() else "No text"
+                                classes = button.get_attribute('class') or "No classes"
+                                aria_label = button.get_attribute('aria-label') or "No aria-label"
+                                print(f"  Button {idx}: text='{text}' class='{classes}' aria-label='{aria_label}'")
+                            except:
+                                print(f"  Button {idx}: Could not read properties")
+                    except Exception as e:
+                        print(f"Error listing buttons: {e}")
+
                     break # Exit loop if button is not found (likely end of book)
-                except Exception as e:
-                    print(f"Error clicking 'Next Chapter' button: {e}")
-                    break # Exit loop on unexpected error
 
                 if len(downloaded_parts) == current_parts_count:
                     no_new_parts_count += 1
