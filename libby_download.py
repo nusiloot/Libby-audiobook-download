@@ -10,6 +10,9 @@ from playwright_stealth import Stealth # Import the stealth library
 # --- Configuration File Path ---
 CONFIG_FILE = 'libby_config.json'
 
+# --- Testing Configuration ---
+AUTO_SELECT_FIRST_AUDIOBOOK = True  # Set to False for manual selection
+
 # --- Global Variables for Tracking Download Progress ---
 downloaded_parts = set()
 max_part_number_found = 0
@@ -412,7 +415,7 @@ def run():
                 return
 
             # Enter PIN
-            print(f"Entering PIN: '{config['LIBBY_PASSWORD']}' into PIN field...")
+            print(f"Entering PIN: *********** into PIN field...")
             try:
                 # Using the provided HTML, the input has id="shibui-form-input-control-0003"
                 # and placeholder="Search…". The ID is the most reliable selector.
@@ -502,19 +505,25 @@ def run():
                 for i, title in enumerate(audiobook_titles):
                     print(f"{i+1}. {title}")
 
-                # Loop until a valid choice is made
-                selected_title = None
-                while selected_title is None:
-                    try:
-                        choice = input("Enter the number of the audiobook to open: ")
-                        choice_index = int(choice) - 1
-                        if 0 <= choice_index < len(audiobook_titles):
-                            selected_title = audiobook_titles[choice_index]
-                            print(f"You selected: '{selected_title}'")
-                        else:
-                            print("Invalid choice. Please enter a number from the list.")
-                    except ValueError:
-                        print("Invalid input. Please enter a number.")
+                # Select audiobook (auto or manual based on configuration)
+                if AUTO_SELECT_FIRST_AUDIOBOOK:
+                    choice_index = 0
+                    selected_title = audiobook_titles[choice_index]
+                    print(f"Auto-selected first audiobook: '{selected_title}'")
+                else:
+                    # Loop until a valid choice is made
+                    selected_title = None
+                    while selected_title is None:
+                        try:
+                            choice = input("Enter the number of the audiobook to open: ")
+                            choice_index = int(choice) - 1
+                            if 0 <= choice_index < len(audiobook_titles):
+                                selected_title = audiobook_titles[choice_index]
+                                print(f"You selected: '{selected_title}'")
+                            else:
+                                print("Invalid choice. Please enter a number from the list.")
+                        except ValueError:
+                            print("Invalid input. Please enter a number.")
 
                 # Locate the specific audiobook tile using the selected title
                 audiobook_tile_locator = page.locator(f"""div.title-tile:has-text("{selected_title}")""").first
@@ -637,6 +646,7 @@ def run():
             if browser:
                 print("Closing browser...")
                 # browser.close()
+                breakpoint()
             print("Script finished.")
 
 # --- How to Run ---
