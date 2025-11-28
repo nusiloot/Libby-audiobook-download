@@ -332,58 +332,58 @@ def run():
 
             # --- Handle library card usage option ---
             print("\nHandling 'Where do you use your library card?' option...")
-            try:
-                # Wait for the options to be visible
-                page.wait_for_selector('.auth-ils-list button', timeout=10000)
+            # try:
+            #     # Wait for the options to be visible
+            #     page.wait_for_selector('.auth-ils-list button', timeout=10000)
 
-                # Get all library choice buttons
-                library_choice_buttons = page.locator('.auth-ils-list button').all()
-                options_text = []
-                for i, button in enumerate(library_choice_buttons):
-                    # Extract text, stripping whitespace and filtering out empty strings
-                    text = button.text_content().strip()
-                    if text: # Only add non-empty text
-                        options_text.append(text)
+            #     # Get all library choice buttons
+            #     library_choice_buttons = page.locator('.auth-ils-list button').all()
+            #     options_text = []
+            #     for i, button in enumerate(library_choice_buttons):
+            #         # Extract text, stripping whitespace and filtering out empty strings
+            #         text = button.text_content().strip()
+            #         if text: # Only add non-empty text
+            #             options_text.append(text)
 
-                if not options_text:
-                    print("No library card usage options found on the page.")
-                    return
+            #     if not options_text:
+            #         print("No library card usage options found on the page.")
+            #         return
 
-                # If the option index is not in config or invalid, prompt the user
-                if 'LIBRARY_CARD_USAGE_OPTION_INDEX' not in config or \
-                   not (0 <= config['LIBRARY_CARD_USAGE_OPTION_INDEX'] < len(options_text)):
-                    while True:
-                        try:
-                            choice = input("Enter the number of your choice: ")
-                            choice_index = int(choice) - 1
-                            if 0 <= choice_index < len(options_text):
-                                config['LIBRARY_CARD_USAGE_OPTION_INDEX'] = choice_index
-                                save_config(config) # Save the selected index
-                                break
-                            else:
-                                print("Invalid choice. Please enter a number from the list.")
-                        except ValueError:
-                            print("Invalid input. Please enter a number.")
-                else:
-                    print(f"Using saved library card usage option: {options_text[config['LIBRARY_CARD_USAGE_OPTION_INDEX']]}")
+            #     # If the option index is not in config or invalid, prompt the user
+            #     if 'LIBRARY_CARD_USAGE_OPTION_INDEX' not in config or \
+            #        not (0 <= config['LIBRARY_CARD_USAGE_OPTION_INDEX'] < len(options_text)):
+            #         while True:
+            #             try:
+            #                 choice = input("Enter the number of your choice: ")
+            #                 choice_index = int(choice) - 1
+            #                 if 0 <= choice_index < len(options_text):
+            #                     config['LIBRARY_CARD_USAGE_OPTION_INDEX'] = choice_index
+            #                     save_config(config) # Save the selected index
+            #                     break
+            #                 else:
+            #                     print("Invalid choice. Please enter a number from the list.")
+            #             except ValueError:
+            #                 print("Invalid input. Please enter a number.")
+            #     else:
+            #         print(f"Using saved library card usage option: {options_text[config['LIBRARY_CARD_USAGE_OPTION_INDEX']]}")
 
-                # Click the corresponding button based on the stored/selected index
-                selected_option_text = options_text[config['LIBRARY_CARD_USAGE_OPTION_INDEX']]
-                # Using triple double quotes for robustness in f-string
-                page.click(f"""button:has-text("{selected_option_text}") >> nth={config['LIBRARY_CARD_USAGE_OPTION_INDEX']}""")
-                page.wait_for_load_state('networkidle')
-                time.sleep(3)
-                # Fix: Separated f-string for filename from os.path.join
-                filename = f"07_after_select_card_usage_{config['LIBRARY_CARD_USAGE_OPTION_INDEX']+1}.png"
-                screenshot_path = os.path.join(config['DOWNLOAD_DIRECTORY'], filename)
-                page.screenshot(path=screenshot_path)
+            #     # Click the corresponding button based on the stored/selected index
+            #     selected_option_text = options_text[config['LIBRARY_CARD_USAGE_OPTION_INDEX']]
+            #     # Using triple double quotes for robustness in f-string
+            #     page.click(f"""button:has-text("{selected_option_text}") >> nth={config['LIBRARY_CARD_USAGE_OPTION_INDEX']}""")
+            #     page.wait_for_load_state('networkidle')
+            #     time.sleep(3)
+            #     # Fix: Separated f-string for filename from os.path.join
+            #     filename = f"07_after_select_card_usage_{config['LIBRARY_CARD_USAGE_OPTION_INDEX']+1}.png"
+            #     screenshot_path = os.path.join(config['DOWNLOAD_DIRECTORY'], filename)
+            #     page.screenshot(path=screenshot_path)
 
-            except PlaywrightTimeoutError:
-                print("Error: Library card usage options did not appear in time.")
-                return
-            except Exception as e:
-                print(f"An error occurred while handling library card usage options: {e}")
-                return
+            # except PlaywrightTimeoutError:
+            #     print("Error: Library card usage options did not appear in time.")
+            #     return
+            # except Exception as e:
+            #     print(f"An error occurred while handling library card usage options: {e}")
+            #     return
 
             # Enter library card number
             print(f"Entering library card number: '{config['LIBRARY_CARD_NUMBER']}' into Card Number field...")
