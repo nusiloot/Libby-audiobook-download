@@ -79,6 +79,10 @@ Before running the script, ensure you have the following installed:
     * On subsequent runs, the script will load the saved configuration from `libby_config.json`.
     * It will then list the audiobooks currently on your Libby shelf and prompt you to enter the number corresponding to the audiobook you wish to download.
 
+4.  **Audio Download**:
+    * Script is on auto download mode.
+    * Scroll to end of audio to download all parts (1st time I tried the script, It only downloaded the 1st part on 3)
+
 ## Troubleshooting & Debugging
 
 * **`HEADLESS_MODE = False`**: In the `libby_download.py` script, set `HEADLESS_MODE = False` at the top of the file. This will make Playwright launch a visible browser window, allowing you to observe the automation steps and identify where issues might occur.
